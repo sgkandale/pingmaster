@@ -1,7 +1,10 @@
 package config
 
 type ServerConfig struct {
-	Port int
+	Port     int
+	TLS      bool
+	CertPath string
+	KeyPath  string
 }
 
 type config struct {

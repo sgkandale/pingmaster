@@ -40,8 +40,22 @@ func Start(ctx context.Context, cfg config.ServerConfig) {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("[ERROR] listen: %s\n", err)
+		log.Printf(
+			"[INFO] starting server on port : %d",
+			cfg.Port,
+		)
+
+		var err error
+		if cfg.TLS {
+			err = srv.ListenAndServeTLS(
+				cfg.CertPath,
+				cfg.KeyPath,
+			)
+		} else {
+			err = srv.ListenAndServe()
+		}
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("[ERROR] starting server : %s", err)
 		}
 	}()
 
@@ -49,7 +63,7 @@ func Start(ctx context.Context, cfg config.ServerConfig) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("[WARN] shutting down server...")
+	log.Println("[WARN] shutting down server")
 
 	// context to shutdown server
 	ctxToStop, cancelCtxToStop := context.WithTimeout(
@@ -58,7 +72,7 @@ func Start(ctx context.Context, cfg config.ServerConfig) {
 	)
 
 	if err := srv.Shutdown(ctxToStop); err != nil {
-		log.Fatal("[WARN] server forced to shutdown: ", err)
+		log.Fatalf("[WARN] server forced to shutdown : %s", err)
 	}
 	cancelCtxToStop()
 
