@@ -1,0 +1,5 @@
+server:
+  port: 8080
+  tls: false
+  certPath: "./ca.pem"
+  keyPath: "./key.pem"
