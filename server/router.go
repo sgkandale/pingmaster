@@ -1,16 +1,28 @@
 package server
 
-import (
-	"net/http"
+func getPath(pathPrefix, path string) string {
+	if pathPrefix == "" {
+		return path
+	}
+	return pathPrefix + path
+}
 
-	"github.com/gin-gonic/gin"
-)
+func (s Server) addRoutes(pathPrefix string) {
 
-func addRoutes(handler *gin.Engine) {
-
-	handler.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	s.Handler.GET(
+		getPath(pathPrefix, "/host"),
+		s.getHost,
+	)
+	s.Handler.POST(
+		getPath(pathPrefix, "/host"),
+		s.addHost,
+	)
+	s.Handler.PUT(
+		getPath(pathPrefix, "/host"),
+		s.updateHost,
+	)
+	s.Handler.DELETE(
+		getPath(pathPrefix, "/host"),
+		s.deleteHost,
+	)
 }

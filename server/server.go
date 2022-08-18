@@ -11,32 +11,35 @@ import (
 	"time"
 
 	"pingmaster/config"
-	"pingmaster/database"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	Handler  *gin.Engine
-	Database database.Database
+	Handler *gin.Engine
+}
+
+func init() {
+	gin.SetMode(gin.ReleaseMode)
 }
 
 func Start(ctx context.Context, cfg config.ServerConfig) {
 
-	// gin handler
-	handler := gin.New()
-	gin.SetMode(gin.ReleaseMode)
+	srvr := Server{
+		Handler: gin.New(),
+	}
 
-	addRoutes(handler)
+	// add routes
+	srvr.addRoutes(cfg.PathPrefix)
 
 	// add middlewares
-	handler.Use(
+	srvr.addMiddlewares(
 		middleware1(),
 	)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
-		Handler: handler,
+		Handler: srvr.Handler,
 	}
 
 	go func() {

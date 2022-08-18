@@ -20,6 +20,14 @@ func GetVerifiedConfig() config {
 			log.Fatal("[ERROR] server tls key path is not set")
 		}
 	}
+	if parsedConfig.Server.PathPrefix != "" {
+		if parsedConfig.Server.PathPrefix[0:1] != "/" {
+			log.Fatal("[ERROR] server path prefix must start with '/'")
+		}
+		if parsedConfig.Server.PathPrefix[len(parsedConfig.Server.PathPrefix)-1:] == "/" {
+			log.Fatal("[ERROR] server path prefix must not end with '/'")
+		}
+	}
 
 	return parsedConfig
 }

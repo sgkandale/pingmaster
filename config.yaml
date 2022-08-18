@@ -3,3 +3,4 @@ server:
   tls: false
   certPath: "./ca.pem"
   keyPath: "./key.pem"
+  pathPrefix: "/pingmaster"
