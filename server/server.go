@@ -11,22 +11,25 @@ import (
 	"time"
 
 	"pingmaster/config"
+	"pingmaster/database"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	Handler *gin.Engine
+	Handler  *gin.Engine
+	Database database.Conn
 }
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func Start(ctx context.Context, cfg config.ServerConfig) {
+func Start(ctx context.Context, cfg config.ServerConfig, dbConn database.Conn) {
 
 	srvr := Server{
-		Handler: gin.New(),
+		Handler:  gin.New(),
+		Database: dbConn,
 	}
 
 	// add routes
@@ -71,7 +74,7 @@ func Start(ctx context.Context, cfg config.ServerConfig) {
 	// context to shutdown server
 	ctxToStop, cancelCtxToStop := context.WithTimeout(
 		ctx,
-		5*time.Second,
+		time.Second*5,
 	)
 
 	if err := srv.Shutdown(ctxToStop); err != nil {

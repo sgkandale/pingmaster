@@ -29,5 +29,22 @@ func GetVerifiedConfig() config {
 		}
 	}
 
+	// database checks
+	if parsedConfig.Database.DatabaseType == "" {
+		log.Fatal("[ERROR] database type is not set")
+	}
+	if parsedConfig.Database.Host == "" {
+		log.Fatal("[ERROR] database host is not set")
+	}
+	if parsedConfig.Database.Port <= 0 {
+		log.Fatal("[ERROR] database port is not set")
+	}
+	if parsedConfig.Database.DatabaseName == "" {
+		log.Fatal("[ERROR] database name is not set")
+	}
+	if parsedConfig.Database.TimeoutInSeconds <= 0 {
+		log.Fatal("[ERROR] database timeout in seconds is not set")
+	}
+
 	return parsedConfig
 }

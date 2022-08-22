@@ -4,3 +4,11 @@ server:
   certPath: "./ca.pem"
   keyPath: "./key.pem"
   pathPrefix: "/pingmaster"
+database:
+  databaseType: "postgres"
+  username: "postgres"
+  password: "postgres"
+  host: "localhost"
+  port: 5432
+  databaseName: "pingmaster"
+  timeoutInSeconds: 20

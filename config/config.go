@@ -8,6 +8,17 @@ type ServerConfig struct {
 	PathPrefix string
 }
 
+type DatabaseConfig struct {
+	DatabaseType     string
+	Username         string
+	Password         string
+	Host             string
+	Port             int
+	DatabaseName     string
+	TimeoutInSeconds int
+}
+
 type config struct {
-	Server ServerConfig
+	Server   ServerConfig
+	Database DatabaseConfig
 }
