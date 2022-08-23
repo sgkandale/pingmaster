@@ -41,6 +41,7 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 
 	// add middlewares
 	srvr.addMiddlewares(
+		authMiddleware(),
 		middleware1(),
 	)
 

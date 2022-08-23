@@ -169,7 +169,41 @@ func (s Server) login(c *gin.Context) {
 	)
 }
 
-func (s Server) logout(c *gin.Context) {}
+func (s Server) logout(c *gin.Context) {
+	authTokenArr := c.Request.Header["Authorization"]
+
+	usr, err := user.DecodeToken(authTokenArr[0], s.TokenSecret)
+	if err != nil {
+		c.JSON(
+			http.StatusUnauthorized,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: err.Error(),
+			},
+		)
+		return
+	}
+
+	deleted := s.Sesssions.DeleteToken(usr.TokenId)
+	if !deleted {
+		c.JSON(
+			http.StatusInternalServerError,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: ResponseMessage_GeneralError,
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		ServerResponse{
+			Status:  ResponseStatus_Success,
+			Message: ResponseMessage_UserLogout,
+		},
+	)
+}
 
 func (s Server) getHost(c *gin.Context) {}
 

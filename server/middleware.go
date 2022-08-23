@@ -12,3 +12,8 @@ func middleware1() gin.HandlerFunc {
 	return func(c *gin.Context) {
 	}
 }
+
+func authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+	}
+}
