@@ -157,6 +157,8 @@ func (s Server) login(c *gin.Context) {
 		return
 	}
 
+	s.Sesssions.AddToken(userReq.TokenId)
+
 	c.JSON(
 		http.StatusOK,
 		ServerResponse{

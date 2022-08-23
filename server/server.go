@@ -20,6 +20,7 @@ type Server struct {
 	Handler     *gin.Engine
 	Database    database.Conn
 	TokenSecret []byte
+	Sesssions   *Sessions
 }
 
 func init() {
@@ -32,6 +33,7 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 		Handler:     gin.New(),
 		Database:    dbConn,
 		TokenSecret: []byte(cfg.TokenSecret),
+		Sesssions:   NewSessions(),
 	}
 
 	// add routes

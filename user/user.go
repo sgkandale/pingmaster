@@ -20,6 +20,9 @@ type User struct {
 	// Token is the JSON Web Token
 	Token string `json:"token,omitempty"`
 
+	// TokenId is the identifier of JSON Web Token
+	TokenId string `json:"-"`
+
 	// CreatedAt is the unix timestamp in seconds
 	// indicating the time when the user was created
 	CreatedAt int64 `json:"created_at,omitempty"`

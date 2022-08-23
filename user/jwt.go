@@ -23,6 +23,7 @@ const (
 // CreateToken creates a JSON Web Token from the user data using HMAC algorithm
 // with tokenSecret as the signing key
 func (u *User) CreateToken(tokenSecret []byte) error {
+	tokenId := uuid.New().String()
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
@@ -31,7 +32,7 @@ func (u *User) CreateToken(tokenSecret []byte) error {
 			token_ExpiryField:     time.Now().Add(time.Hour).Unix(),
 			token_NotBeforeField:  time.Now().Unix(),
 			token_IssuedAtField:   time.Now().Unix(),
-			token_IdentifierField: uuid.New().String(),
+			token_IdentifierField: tokenId,
 			token_NameField:       u.Name,
 		},
 	)
@@ -42,6 +43,7 @@ func (u *User) CreateToken(tokenSecret []byte) error {
 	}
 
 	u.Token = tokenString
+	u.TokenId = tokenId
 	return nil
 }
 
