@@ -28,7 +28,7 @@ func (s Server) registerUser(c *gin.Context) {
 	}
 
 	// verify user fields
-	err = userReq.Prepare()
+	err = userReq.PrepareNew()
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -94,7 +94,7 @@ func (s Server) registerUser(c *gin.Context) {
 func (s Server) login(c *gin.Context) {
 	userReq := user.User{}
 
-	err := c.BindJSON(&userReq)
+	err := c.ShouldBindJSON(&userReq)
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -106,7 +106,7 @@ func (s Server) login(c *gin.Context) {
 		return
 	}
 
-	err = userReq.Prepare()
+	err = userReq.PrepareLogin()
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -117,6 +117,54 @@ func (s Server) login(c *gin.Context) {
 		)
 		return
 	}
+
+	err = s.Database.GetUserDetails(
+		c.Request.Context(),
+		&userReq,
+	)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: err.Error(),
+			},
+		)
+		return
+	}
+
+	err = userReq.VerifyPassword()
+	if err != nil {
+		c.JSON(
+			http.StatusUnauthorized,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: err.Error(),
+			},
+		)
+		return
+	}
+
+	err = userReq.CreateToken(s.TokenSecret)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		ServerResponse{
+			Status:   ResponseStatus_Success,
+			Message:  ResponseMessage_UserLogin,
+			Response: userReq,
+		},
+	)
 }
 
 func (s Server) logout(c *gin.Context) {}

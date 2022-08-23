@@ -22,7 +22,7 @@ const (
 
 // CreateToken creates a JSON Web Token from the user data using HMAC algorithm
 // with tokenSecret as the signing key
-func (u *User) CreateToken(tokenSecret string) error {
+func (u *User) CreateToken(tokenSecret []byte) error {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
@@ -47,7 +47,7 @@ func (u *User) CreateToken(tokenSecret string) error {
 
 // DecodeToken decoded the given token string into user
 // with the given token secret as signing key
-func DecodeToken(tokenString, tokenSecret string) (*User, error) {
+func DecodeToken(tokenString string, tokenSecret []byte) (*User, error) {
 	token, err := jwt.Parse(
 		tokenString,
 		func(token *jwt.Token) (interface{}, error) {

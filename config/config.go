@@ -18,7 +18,8 @@ type DatabaseConfig struct {
 	TimeoutInSeconds int
 }
 
-type config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
+type Config struct {
+	Server      ServerConfig
+	Database    DatabaseConfig
+	TokenSecret string
 }

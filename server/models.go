@@ -6,6 +6,7 @@ const (
 
 	ResponseMessage_ReadRequestError    = "failed to read request"
 	ResponseMessage_UsernameExistsError = "user name already exists"
+	ResponseMessage_UserLogin           = "user login successful"
 )
 
 type ServerResponse struct {

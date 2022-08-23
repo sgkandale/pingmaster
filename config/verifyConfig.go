@@ -2,7 +2,7 @@ package config
 
 import "log"
 
-func GetVerifiedConfig() config {
+func GetVerifiedConfig() Config {
 	parsedConfig := ParseConfig()
 
 	// Server Checks
@@ -44,6 +44,17 @@ func GetVerifiedConfig() config {
 	}
 	if parsedConfig.Database.TimeoutInSeconds <= 0 {
 		log.Fatal("[ERROR] database timeout in seconds is not set")
+	}
+
+	// other checks
+	if parsedConfig.TokenSecret == "" {
+		log.Fatal("[ERROR] token secret is not set")
+	}
+	if len(parsedConfig.TokenSecret) < 12 {
+		log.Fatal("[ERROR] token secret should be atleast 12 characters long")
+	}
+	if len(parsedConfig.TokenSecret) > 64 {
+		log.Fatal("[ERROR] token secret should ot be longer than 64 characters")
 	}
 
 	return parsedConfig

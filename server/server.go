@@ -17,23 +17,25 @@ import (
 )
 
 type Server struct {
-	Handler  *gin.Engine
-	Database database.Conn
+	Handler     *gin.Engine
+	Database    database.Conn
+	TokenSecret []byte
 }
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func Start(ctx context.Context, cfg config.ServerConfig, dbConn database.Conn) {
+func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 
 	srvr := Server{
-		Handler:  gin.New(),
-		Database: dbConn,
+		Handler:     gin.New(),
+		Database:    dbConn,
+		TokenSecret: []byte(cfg.TokenSecret),
 	}
 
 	// add routes
-	srvr.addRoutes(cfg.PathPrefix)
+	srvr.addRoutes(cfg.Server.PathPrefix)
 
 	// add middlewares
 	srvr.addMiddlewares(
@@ -41,21 +43,21 @@ func Start(ctx context.Context, cfg config.ServerConfig, dbConn database.Conn) {
 	)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler: srvr.Handler,
 	}
 
 	go func() {
 		log.Printf(
 			"[INFO] starting server on port : %d",
-			cfg.Port,
+			cfg.Server.Port,
 		)
 
 		var err error
-		if cfg.TLS {
+		if cfg.Server.TLS {
 			err = srv.ListenAndServeTLS(
-				cfg.CertPath,
-				cfg.KeyPath,
+				cfg.Server.CertPath,
+				cfg.Server.KeyPath,
 			)
 		} else {
 			err = srv.ListenAndServe()

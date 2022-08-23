@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ParseConfig() config {
+func ParseConfig() Config {
 	log.Println("[INFO] parsing config file")
 
 	viper.SetConfigName("config")
@@ -18,7 +18,7 @@ func ParseConfig() config {
 		log.Fatal("[ERROR] parsing config file : ", err)
 	}
 
-	readConfig := config{}
+	readConfig := Config{}
 
 	err = viper.Unmarshal(&readConfig)
 	if err != nil {

@@ -22,7 +22,7 @@ func main() {
 
 	server.Start(
 		ctx,
-		cfg.Server,
+		cfg,
 		dbConn,
 	)
 }
