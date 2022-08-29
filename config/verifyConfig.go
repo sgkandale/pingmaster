@@ -46,15 +46,18 @@ func GetVerifiedConfig() Config {
 		log.Fatal("[ERROR] database timeout in seconds is not set")
 	}
 
-	// other checks
-	if parsedConfig.TokenSecret == "" {
-		log.Fatal("[ERROR] token secret is not set")
+	// security checks
+	if parsedConfig.Security.TokenSecret == "" {
+		log.Fatal("[ERROR] security token secret is not set")
 	}
-	if len(parsedConfig.TokenSecret) < 12 {
-		log.Fatal("[ERROR] token secret should be atleast 12 characters long")
+	if len(parsedConfig.Security.TokenSecret) < 12 {
+		log.Fatal("[ERROR] security token secret should be atleast 12 characters long")
 	}
-	if len(parsedConfig.TokenSecret) > 64 {
-		log.Fatal("[ERROR] token secret should ot be longer than 64 characters")
+	if len(parsedConfig.Security.TokenSecret) > 64 {
+		log.Fatal("[ERROR] security token secret should ot be longer than 64 characters")
+	}
+	if parsedConfig.Security.AllowedOrigins == "" {
+		log.Fatal("[ERROR] security allowed origin is not set")
 	}
 
 	return parsedConfig

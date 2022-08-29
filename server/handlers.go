@@ -93,7 +93,6 @@ func (s Server) registerUser(c *gin.Context) {
 
 func (s Server) login(c *gin.Context) {
 	userReq := user.User{}
-
 	err := c.ShouldBindJSON(&userReq)
 	if err != nil {
 		c.JSON(

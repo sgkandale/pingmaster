@@ -4,6 +4,11 @@ import {
 	InputAdornment, FormControl, Button, Typography, CircularProgress
 } from "@mui/material";
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import axios from 'axios'
+import { ServerAddr } from '../server'
+import { useDispatch } from 'react-redux'
+import { ACTION_LOGIN } from "../state_actions";
+import { useNavigate } from 'react-router-dom';
 
 export default function Auth() {
 	const [view, setView] = useState('Login')
@@ -11,15 +16,18 @@ export default function Auth() {
 		name: '',
 		password: '',
 		showPassword: false,
-	});
-	const [state, setState] = useState({
 		loading: false,
 		error: ""
 	})
-
+	const dispatch = useDispatch()
+	const navigate = useNavigate();
 
 	const handleChange = (prop) => (event) => {
-		setValues({ ...values, [prop]: event.target.value });
+		setValues({
+			...values,
+			[prop]: event.target.value,
+			loading: false
+		});
 	};
 
 	const handleClickShowPassword = () => {
@@ -35,6 +43,29 @@ export default function Auth() {
 
 	const handleFormSubmit = (event) => {
 		event.preventDefault();
+		setValues({
+			...values,
+			loading: true,
+		})
+		axios.post(ServerAddr + '/user/login', {
+			name: values.name,
+			password: values.password,
+		})
+			.then(response => {
+				setValues({
+					...values,
+					loading: false,
+				})
+				dispatch({ type: ACTION_LOGIN, payload: response.data })
+				navigate('/dashboard')
+			})
+			.catch(error => {
+				setValues({
+					...values,
+					loading: false,
+					error: error.response.data.message
+				})
+			});
 	}
 
 
@@ -99,6 +130,7 @@ export default function Auth() {
 					sx={{
 						marginBottom: '20px',
 					}}
+					disabled={values.showPassword}
 				/>
 				<FormControl
 					fullWidth
@@ -116,6 +148,7 @@ export default function Auth() {
 						value={values.password}
 						onChange={handleChange('password')}
 						fullWidth
+						disabled={values.showPassword}
 						endAdornment={
 							<InputAdornment position="end">
 								<IconButton
@@ -156,14 +189,23 @@ export default function Auth() {
 						variant="contained"
 						type="submit"
 						onSubmit={handleFormSubmit}
-						disabled={state.loading}
+						disabled={values.loading}
 					>
 						{
-							state.loading ?
+							values.loading ?
 								<CircularProgress size={25} /> : view
 						}
 					</Button>
 				</Grid>
+				<Typography
+					variant="body1"
+					color="error"
+					sx={{
+						marginTop: '20px'
+					}}
+				>
+					{values.error}
+				</Typography>
 			</Grid>
 		</Box>
 	</Grid>

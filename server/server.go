@@ -32,18 +32,18 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 	srvr := Server{
 		Handler:     gin.New(),
 		Database:    dbConn,
-		TokenSecret: []byte(cfg.TokenSecret),
+		TokenSecret: []byte(cfg.Security.TokenSecret),
 		Sesssions:   NewSessions(),
 	}
 
+	// add middlewares
+	srvr.Handler.Use(
+		headers(cfg.Security),
+		authMiddleware(),
+	)
+
 	// add routes
 	srvr.addRoutes(cfg.Server.PathPrefix)
-
-	// add middlewares
-	srvr.addMiddlewares(
-		authMiddleware(),
-		middleware1(),
-	)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),

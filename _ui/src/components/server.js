@@ -1,0 +1,1 @@
+export const ServerAddr = "http://localhost:8080"

@@ -8,6 +8,11 @@ type ServerConfig struct {
 	PathPrefix string
 }
 
+type SecurityConfig struct {
+	TokenSecret    string
+	AllowedOrigins string
+}
+
 type DatabaseConfig struct {
 	DatabaseType     string
 	Username         string
@@ -19,7 +24,7 @@ type DatabaseConfig struct {
 }
 
 type Config struct {
-	Server      ServerConfig
-	Database    DatabaseConfig
-	TokenSecret string
+	Server   ServerConfig
+	Database DatabaseConfig
+	Security SecurityConfig
 }

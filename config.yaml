@@ -3,7 +3,10 @@ server:
   tls: false
   certPath: "./ca.pem"
   keyPath: "./key.pem"
-  pathPrefix: "/pingmaster"
+  pathPrefix: ""
+security:
+  tokenSecret: testSecret1234
+  allowedOrigins: "*"
 database:
   databaseType: "postgres"
   username: "postgres"
@@ -12,4 +15,3 @@ database:
   port: 5432
   databaseName: "pingmaster"
   timeoutInSeconds: 20
-tokenSecret: testSecret1234
