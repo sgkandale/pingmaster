@@ -10,10 +10,11 @@ const rootReducer = (state = initialState, action) => {
     switch (action.type) {
 
         case ACTION_LOGIN:
+            console.log("action.payload", action.payload)
             return {
                 ...initialState,
                 loggedIn: true,
-                user: action.paylod,
+                user: action.payload,
             }
 
         default:

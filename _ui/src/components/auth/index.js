@@ -47,7 +47,11 @@ export default function Auth() {
 			...values,
 			loading: true,
 		})
-		axios.post(ServerAddr + '/user/login', {
+		var addr = '/user/login'
+		if (view === "Register") {
+			addr = '/user/'
+		}
+		axios.post(ServerAddr + addr, {
 			name: values.name,
 			password: values.password,
 		})
@@ -56,8 +60,8 @@ export default function Auth() {
 					...values,
 					loading: false,
 				})
-				dispatch({ type: ACTION_LOGIN, payload: response.data })
-				navigate('/dashboard')
+				dispatch({ type: ACTION_LOGIN, payload: response.data.response })
+				navigate('/')
 			})
 			.catch(error => {
 				setValues({
