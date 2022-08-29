@@ -81,6 +81,20 @@ func (s Server) registerUser(c *gin.Context) {
 		return
 	}
 
+	err = userReq.CreateToken(s.TokenSecret)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: err.Error(),
+			},
+		)
+		return
+	}
+
+	s.Sesssions.AddToken(userReq.TokenId)
+
 	c.JSON(
 		http.StatusCreated,
 		ServerResponse{
