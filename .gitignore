@@ -14,3 +14,5 @@
 # Log files
 *.log
 *.json
+
+!pingmaster.postman_collection.json

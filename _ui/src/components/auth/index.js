@@ -54,6 +54,11 @@ export default function Auth() {
 		axios.post(ServerAddr + addr, {
 			name: values.name,
 			password: values.password,
+		}, {
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': "not-auth"
+			}
 		})
 			.then(response => {
 				setValues({

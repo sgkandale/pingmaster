@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Auth from "./auth";
-import Homepage from "./homepage";
+import Overview from "./overview";
 import Menu from "./menu";
 
 export default function Router() {
@@ -15,7 +15,7 @@ export default function Router() {
             <Route
                 path="/"
                 element={
-                    <Menu viewElement={<Homepage />} />
+                    <Menu viewElement={<Overview />} />
                 }
             >
             </Route>

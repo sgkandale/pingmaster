@@ -1,5 +1,5 @@
 import { createStore } from "redux";
-import { ACTION_LOGIN } from "./state_actions";
+import { ACTION_LOGIN, ACTION_LOGOUT } from "./state_actions";
 
 var initialState = {
     loggedIn: false,
@@ -10,12 +10,14 @@ const rootReducer = (state = initialState, action) => {
     switch (action.type) {
 
         case ACTION_LOGIN:
-            console.log("action.payload", action.payload)
             return {
                 ...initialState,
                 loggedIn: true,
                 user: action.payload,
             }
+
+        case ACTION_LOGOUT:
+            return initialState
 
         default:
             return state

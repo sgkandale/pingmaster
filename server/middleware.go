@@ -26,7 +26,20 @@ func headers(cfg config.SecurityConfig) gin.HandlerFunc {
 	}
 }
 
+// authMiddleware only checks for existance of the header,
+// verification is handled in each handler
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authTokenArr := c.Request.Header["Authorization"]
+		if authTokenArr == nil {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				ServerResponse{
+					Status:  ResponseStatus_Unauthorized,
+					Message: ResponseMessage_NoAuthHeader,
+				},
+			)
+			return
+		}
 	}
 }

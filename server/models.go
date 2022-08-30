@@ -21,6 +21,6 @@ type ServerResponse struct {
 	Message string `json:"message,omitempty"`
 
 	// Response is the response of the server
-	// when it has to some data
+	// when it has to send some data
 	Response interface{} `json:"response,omitempty"`
 }

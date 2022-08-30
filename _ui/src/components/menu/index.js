@@ -1,92 +1,72 @@
-import {
-    Box, Drawer, AppBar, CssBaseline, Toolbar, List, ListItemText,
-    Typography, Divider, ListItem, ListItemButton, ListItemIcon, IconButton,
-} from '@mui/material';
-import { Dashboard, Logout } from '@mui/icons-material';
+import { Box, CssBaseline, Toolbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'
+import { ServerAddr } from '../server'
+import { useDispatch, useSelector } from 'react-redux';
+import { ACTION_LOGOUT } from '../state_actions'
+import { useEffect, useState } from 'react';
+import LogoutSnackbar from '../auth/logoutSnack';
+import Topbar from './topbar';
+import Sidebar from './sidebar';
 
-const drawerWidth = 240;
+const defaultSnackVal = {
+    view: false,
+    message: "",
+    severity: "error"
+}
 
 export default function Menu(props) {
     const navigate = useNavigate();
+    const user = useSelector(state => state.user)
+    const loggedIn = useSelector(state => state.loggedIn)
+    const dispatch = useDispatch()
+    const [snack, setSnack] = useState(defaultSnackVal)
 
-    const menuItems = [
-        {
-            type: 'link',
-            text: 'Overview',
-            icon: <Dashboard />,
-            clickHandler: () => navigate('/')
-        },
-        {
-            type: 'divider'
-        },
-        {
-            type: 'link',
-            text: 'Logout',
-            icon: <Logout />,
-            clickHandler: () => { }
+    const closeSnack = () => {
+        setSnack(defaultSnackVal)
+    }
+
+    useEffect(() => {
+        if (!loggedIn) {
+            navigate('/login')
         }
-    ]
+    }, [loggedIn, navigate])
 
-    return (
-        <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <AppBar
-                position="fixed"
-                sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            >
-                <Toolbar>
-                    <Typography
-                        variant="h5"
-                        sx={{
-                            fontFamily: 'Silkscreen, Helvetica, sans-serif',
-                            flexGrow: 1
-                        }}
-                    >
-                        pingmaster
-                    </Typography>
-                    <IconButton aria-label="logout">
-                        <Logout />
-                    </IconButton>
-                </Toolbar>
-            </AppBar>
-            <Drawer
-                variant="permanent"
-                sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-                }}
-            >
-                <Toolbar />
-                <Box sx={{ overflow: 'auto' }}>
-                    <List>
-                        {
-                            menuItems.map((item) => {
-                                if (item.type === 'divider') {
-                                    return <Divider />
-                                }
-                                return <ListItem
-                                    key={item.text}
-                                    disablePadding
-                                    onClick={item.clickHandler}
-                                >
-                                    <ListItemButton>
-                                        <ListItemIcon>
-                                            {item.icon}
-                                        </ListItemIcon>
-                                        <ListItemText primary={item.text} />
-                                    </ListItemButton>
-                                </ListItem>
-                            })
-                        }
-                    </List>
-                </Box>
-            </Drawer>
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                <Toolbar />
-                {props.viewElement}
-            </Box>
+
+    const callLogout = () => {
+        axios.post(ServerAddr + '/user/logout', {}, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': user.token
+            }
+        })
+            .then(response => {
+                dispatch({ type: ACTION_LOGOUT })
+                navigate('/login')
+            })
+            .catch(error => {
+                console.log(error)
+                setSnack({
+                    view: true,
+                    message: error.response.data.message,
+                    severity: "error"
+                })
+            });
+    }
+
+    // workaround to prevent rendering dashboard if not logged in
+    if (!loggedIn) {
+        return <></>
+    }
+
+    return <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <Topbar callLogout={callLogout} />
+        <Sidebar callLogout={callLogout} />
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Toolbar />
+            {props.viewElement}
         </Box>
-    );
+        <LogoutSnackbar open={snack.view} close={closeSnack} message={snack.message} />
+    </Box>
 }
