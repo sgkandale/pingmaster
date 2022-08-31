@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Auth from "./auth";
 import Overview from "./overview";
 import Menu from "./menu";
+import NotFound from "./not_found";
+import Targets from "./targets";
+import AddTarget from "./add_target";
 
 export default function Router() {
 
@@ -10,16 +13,26 @@ export default function Router() {
             <Route
                 path="/login"
                 element={<Auth />}
-            >
-            </Route>
+            />
             <Route
                 path="/"
                 element={
                     <Menu viewElement={<Overview />} />
                 }
-            >
-            </Route>
-            <Route exact path="*" element={<h1>Not Found</h1>}>
+            />
+            <Route
+                path="/targets"
+                element={
+                    <Menu viewElement={<Targets />} />
+                }
+            />
+            <Route
+                path="/targets/new"
+                element={
+                    <Menu viewElement={<AddTarget />} />
+                }
+            />
+            <Route exact path="*" element={<NotFound />}>
             </Route>
         </Routes>
     </BrowserRouter>

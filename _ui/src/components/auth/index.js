@@ -83,9 +83,7 @@ export default function Auth() {
 		direction="column"
 		justifyContent="flex-start"
 		alignItems="center"
-		sx={{
-			height: '100vh'
-		}}
+		sx={{ height: '100vh' }}
 	>
 		<Typography
 			variant="h3"
@@ -126,6 +124,8 @@ export default function Auth() {
 					padding: '20px'
 				}}
 				component="form"
+				noValidate
+				autoComplete="off"
 				onSubmit={handleFormSubmit}
 			>
 				<TextField

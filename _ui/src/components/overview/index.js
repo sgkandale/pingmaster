@@ -1,4 +1,4 @@
-import { Grid, Card, CardContent } from "@mui/material";
+import { Grid } from "@mui/material";
 import HealthStat from "./health_stat";
 
 export default function Overview() {

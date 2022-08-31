@@ -1,4 +1,4 @@
-import { Box, CssBaseline, Toolbar } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
 import { ServerAddr } from '../server'
@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ACTION_LOGOUT } from '../state_actions'
 import { useEffect, useState } from 'react';
 import LogoutSnackbar from '../auth/logoutSnack';
-import Topbar from './topbar';
 import Sidebar from './sidebar';
 
 const defaultSnackVal = {
@@ -61,10 +60,8 @@ export default function Menu(props) {
 
     return <Box sx={{ display: 'flex' }}>
         <CssBaseline />
-        <Topbar callLogout={callLogout} />
         <Sidebar callLogout={callLogout} />
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <Toolbar />
             {props.viewElement}
         </Box>
         <LogoutSnackbar open={snack.view} close={closeSnack} message={snack.message} />

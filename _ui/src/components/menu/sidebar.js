@@ -1,6 +1,6 @@
-import { Logout, Dashboard } from '@mui/icons-material';
+import { Logout, Dashboard, InsertLink } from '@mui/icons-material';
 import {
-    Box, Drawer, Toolbar, List, ListItemText,
+    Box, Drawer, List, ListItemText,
     Divider, ListItem, ListItemButton, ListItemIcon,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -14,8 +14,16 @@ export default function Sidebar(props) {
         {
             type: 'link',
             text: 'Overview',
+            key: '/',
             icon: <Dashboard />,
             clickHandler: () => navigate('/')
+        },
+        {
+            type: 'link',
+            text: 'Targets',
+            key: '/targets',
+            icon: <InsertLink />,
+            clickHandler: () => navigate('/targets')
         },
         {
             type: 'divider',
@@ -38,7 +46,6 @@ export default function Sidebar(props) {
             [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
         }}
     >
-        <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
             <List>
                 {
@@ -50,6 +57,10 @@ export default function Sidebar(props) {
                             key={item.text}
                             disablePadding
                             onClick={item.clickHandler}
+                            sx={{
+                                bgcolor: window.location.pathname === item.key ?
+                                    'primary.ultraLight' : 'white'
+                            }}
                         >
                             <ListItemButton>
                                 <ListItemIcon>
