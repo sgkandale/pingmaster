@@ -12,6 +12,7 @@ import (
 
 	"pingmaster/config"
 	"pingmaster/database"
+	"pingmaster/target"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,19 +22,21 @@ type Server struct {
 	Database    database.Conn
 	TokenSecret []byte
 	Sesssions   *Sessions
+	TargetsPool *target.Pool
 }
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
+func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targetsPool *target.Pool) {
 
-	srvr := Server{
+	srvr := &Server{
 		Handler:     gin.New(),
-		Database:    dbConn,
 		TokenSecret: []byte(cfg.Security.TokenSecret),
+		Database:    dbConn,
 		Sesssions:   NewSessions(),
+		TargetsPool: targetsPool,
 	}
 
 	// add middlewares
@@ -66,7 +69,8 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 			err = srv.ListenAndServe()
 		}
 		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("[ERROR] starting server : %s", err)
+			log.Printf("[ERROR] starting server : %s", err)
+			return
 		}
 	}()
 
@@ -81,11 +85,12 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn) {
 		ctx,
 		time.Second*5,
 	)
+	defer cancelCtxToStop()
 
 	if err := srv.Shutdown(ctxToStop); err != nil {
-		log.Fatalf("[WARN] server forced to shutdown : %s", err)
+		log.Printf("[WARN] server forced to shutdown : %s", err)
+		return
 	}
-	cancelCtxToStop()
 
 	log.Println("[INFO] server exiting")
 }

@@ -11,6 +11,9 @@ const (
 	ResponseMessage_UserLogin           = "user login successful"
 	ResponseMessage_UserLogout          = "user logout successful"
 	ResponseMessage_NoAuthHeader        = "'authorization' header not present in request"
+	ResponseMessage_InvalidToken        = "invalid token"
+
+	ResponseMessage_TargetCreated = "new target created"
 )
 
 type ServerResponse struct {

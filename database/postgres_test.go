@@ -43,7 +43,7 @@ func TestNewPostgres(t *testing.T) {
 func TestPostgresCheckUserExistance(t *testing.T) {
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
-	name := "John"
+	name := "Ramesh"
 
 	pgConn, err := database.NewPostgres(
 		ctx,
@@ -72,7 +72,7 @@ func TestPostgresCheckUserExistance(t *testing.T) {
 func TestPostgresGetUserDetails(t *testing.T) {
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
-	name := "John"
+	name := "Ramesh"
 
 	pgConn, err := database.NewPostgres(
 		ctx,
@@ -96,7 +96,7 @@ func TestPostgresGetUserDetails(t *testing.T) {
 func TestPostgresInsertUser(t *testing.T) {
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
-	name := "Jane"
+	name := "Rama"
 	passwordHash := "abcd"
 
 	pgConn, err := database.NewPostgres(

@@ -11,30 +11,28 @@ const (
 )
 
 func TestToken(t *testing.T) {
-	usr := user.User{
-		Name: "John",
-	}
+	for _, usr := range users {
+		err := usr.CreateToken([]byte(testTokenSecret))
+		if err != nil {
+			t.Errorf("TestToken.CreateToken : %s", err)
+			return
+		}
 
-	err := usr.CreateToken([]byte(testTokenSecret))
-	if err != nil {
-		t.Errorf("TestToken.CreateToken : %s", err)
-		return
-	}
+		if usr.Token == "" {
+			t.Error("TestToken : token is blank")
+			return
+		}
 
-	if usr.Token == "" {
-		t.Error("TestToken : token is blank")
-		return
-	}
-
-	newUsr, err := user.DecodeToken(usr.Token, []byte(testTokenSecret))
-	if err != nil {
-		t.Errorf("TestToken.DecodeToken : %s", err)
-		return
-	}
-	if newUsr.Name != usr.Name {
-		t.Errorf(
-			"TestToken : name not matching after decoding, previous name : %s, new name : %s",
-			usr.Name, newUsr.Name,
-		)
+		newUsr, err := user.DecodeToken(usr.Token, []byte(testTokenSecret))
+		if err != nil {
+			t.Errorf("TestToken.DecodeToken : %s", err)
+			return
+		}
+		if newUsr.Name != usr.Name {
+			t.Errorf(
+				"TestToken : name not matching after decoding, previous name : %s, new name : %s",
+				usr.Name, newUsr.Name,
+			)
+		}
 	}
 }

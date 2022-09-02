@@ -10,14 +10,11 @@ func getPath(pathPrefix, path string) string {
 func (s Server) addRoutes(pathPrefix string) {
 
 	userRoutes := s.Handler.Group(getPath(pathPrefix, "/user"))
-	hostRoutes := s.Handler.Group(getPath(pathPrefix, "/host"))
+	targetRoutes := s.Handler.Group(getPath(pathPrefix, "/target"))
 
 	userRoutes.POST("/", s.registerUser)
 	userRoutes.POST("/login", s.login)
 	userRoutes.POST("/logout", s.logout)
 
-	hostRoutes.GET("/", s.getHost)
-	hostRoutes.POST("/", s.addHost)
-	hostRoutes.PUT("/", s.updateHost)
-	hostRoutes.DELETE("/", s.deleteHost)
+	targetRoutes.POST("/", s.addTarget)
 }

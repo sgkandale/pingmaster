@@ -8,29 +8,33 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type prepareNewUser struct {
+type newUser struct {
 	user.User
 	ExpectError bool
 }
 
-func TestPrepareNew(t *testing.T) {
-	users := []prepareNewUser{
+var users = []newUser{}
+
+func init() {
+	users = []newUser{
 		{
 			User: user.User{
-				Name:     "John Doe",
-				Password: "John Doe",
+				Name:     "Ramesh Deo",
+				Password: "Ramesh Deo",
 			},
 			ExpectError: false,
 		},
 		{
 			User: user.User{
-				Name:     "John",
-				Password: "John",
+				Name:     "Ramesh",
+				Password: "Ramesh",
 			},
 			ExpectError: true,
 		},
 	}
+}
 
+func TestPrepareNew(t *testing.T) {
 	for i, eachUser := range users {
 		err := eachUser.PrepareNew()
 		if err != nil && !eachUser.ExpectError {
@@ -43,17 +47,6 @@ func TestPrepareNew(t *testing.T) {
 }
 
 func TestVerifyPassword(t *testing.T) {
-	users := []user.User{
-		{
-			Name:     "John Doe",
-			Password: "John Doe",
-		},
-		{
-			Name:     "Jane Doe",
-			Password: "Jane Doe",
-		},
-	}
-
 	// generate password
 	for i, eachUser := range users {
 		passwordHash, err := bcrypt.GenerateFromPassword(
