@@ -15,3 +15,4 @@ database:
   port: 5432
   databaseName: "pingmaster"
   timeoutInSeconds: 20
+  maxConcurrentQueries: 100

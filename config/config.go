@@ -1,5 +1,9 @@
 package config
 
+const (
+	Default_DBMaxConcurrentQuries int = 100
+)
+
 type ServerConfig struct {
 	Port       int
 	TLS        bool
@@ -14,13 +18,14 @@ type SecurityConfig struct {
 }
 
 type DatabaseConfig struct {
-	DatabaseType     string
-	Username         string
-	Password         string
-	Host             string
-	Port             int
-	DatabaseName     string
-	TimeoutInSeconds int
+	DatabaseType         string
+	Username             string
+	Password             string
+	Host                 string
+	Port                 int
+	DatabaseName         string
+	TimeoutInSeconds     int
+	MaxConcurrentQueries int
 }
 
 type Config struct {

@@ -45,6 +45,10 @@ func GetVerifiedConfig() Config {
 	if parsedConfig.Database.TimeoutInSeconds <= 0 {
 		log.Fatal("[ERR] database timeout in seconds is not set")
 	}
+	if parsedConfig.Database.MaxConcurrentQueries == 0 {
+		log.Printf("[WRN] database max concurrent queries not set, using default value %d", Default_DBMaxConcurrentQuries)
+		parsedConfig.Database.MaxConcurrentQueries = Default_DBMaxConcurrentQuries
+	}
 
 	// security checks
 	if parsedConfig.Security.TokenSecret == "" {
