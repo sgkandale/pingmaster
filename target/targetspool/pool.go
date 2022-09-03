@@ -3,7 +3,6 @@ package targetspool
 import (
 	"context"
 	"errors"
-	"log"
 	"sync"
 	"time"
 
@@ -91,8 +90,7 @@ func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
 	for i := 0; i < 100; i++ {
 		go func() {
 			for eachPing := range pingChan {
-				// dbConn.InsertPing(ctx, *eachPing)
-				log.Println(eachPing)
+				dbConn.InsertPing(ctx, *eachPing)
 			}
 		}()
 	}

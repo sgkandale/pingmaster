@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"pingmaster/config"
 	"pingmaster/database"
@@ -172,6 +173,34 @@ func TestPostgresInsertTarget(t *testing.T) {
 	}
 
 	err = pgConn.InsertTarget(ctx, w)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPostgresInsertPing(t *testing.T) {
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	pgConn, err := database.NewPostgres(
+		ctx,
+		pgConfig,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer pgConn.Close(ctx)
+
+	ping := target.Ping{
+		TargetKey:  "Google_Ramesh",
+		Timestamp:  time.Now().Unix(),
+		Duration:   150,
+		StatusCode: 200,
+		Error:      nil,
+	}
+
+	err = pgConn.InsertPing(ctx, ping)
 	if err != nil {
 		t.Error(err)
 	}

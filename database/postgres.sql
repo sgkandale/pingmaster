@@ -20,3 +20,13 @@ CREATE TABLE targets(
    ping_interval INT NOT NULL,
    CONSTRAINT fk_creator FOREIGN KEY(creator) REFERENCES users(name) ON DELETE CASCADE
 );
+
+CREATE TABLE pings(
+   key VARCHAR(1024) NOT NULL,
+   timestamp BIGINT NOT NULL,
+   duration INT NOT NULL,
+   status_code INT,
+   error VARCHAR(4096),
+   PRIMARY KEY (key, timestamp),
+   CONSTRAINT fk_target FOREIGN KEY(key) REFERENCES targets(key) ON DELETE CASCADE
+);

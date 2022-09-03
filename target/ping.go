@@ -2,6 +2,9 @@ package target
 
 // Ping is the response of each call to the target
 type Ping struct {
+	// TargetKey is the pool key of target
+	TargetKey string
+
 	// Timestamp in seconds when the ping was initiated
 	Timestamp int64
 

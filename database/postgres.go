@@ -200,3 +200,22 @@ func (p Postgres) InsertTarget(ctx context.Context, tg target.Target) error {
 	}
 	return nil
 }
+
+func (p Postgres) InsertPing(ctx context.Context, ping target.Ping) error {
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+
+	_, err := p.DBConn.Exec(
+		ctx,
+		`insert into `+PingsTable+`
+		 (key, timestamp, duration, status_code, error)
+		 values ($1, $2, $3, $4, $5);`,
+		ping.TargetKey, ping.Timestamp, ping.Duration,
+		ping.StatusCode, ping.Error,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}

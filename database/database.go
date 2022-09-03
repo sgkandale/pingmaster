@@ -13,6 +13,7 @@ import (
 const (
 	UsersTable   = "users"
 	TargetsTable = "targets"
+	PingsTable   = "pings"
 )
 
 type Conn interface {
@@ -27,6 +28,8 @@ type Conn interface {
 	FetchTargets(ctx context.Context) ([]target.Target, error)
 
 	InsertTarget(ctx context.Context, tg target.Target) error
+
+	InsertPing(ctx context.Context, ping target.Ping) error
 }
 
 func New(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
