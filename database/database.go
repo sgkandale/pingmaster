@@ -19,6 +19,10 @@ const (
 type Conn interface {
 	Close(ctx context.Context)
 
+	GetMaxConcurrentQueries() int
+
+	GetPingsValidity() int
+
 	CheckUserExistance(ctx context.Context, usr user.User) (bool, error)
 
 	GetUserDetails(ctx context.Context, usr *user.User) error
@@ -30,6 +34,8 @@ type Conn interface {
 	InsertTarget(ctx context.Context, tg target.Target) error
 
 	InsertPing(ctx context.Context, ping target.Ping) error
+
+	DeleteOldPings(ctx context.Context) error
 }
 
 func New(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {

@@ -16,8 +16,10 @@ import (
 )
 
 type Postgres struct {
-	DBConn  *pgxpool.Pool
-	Timeout time.Duration
+	DBConn               *pgxpool.Pool
+	Timeout              time.Duration
+	MaxConcurrentQueries int
+	PingsValidity        int
 }
 
 func NewPostgres(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
@@ -62,9 +64,18 @@ func NewPostgres(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
 	)
 
 	return Postgres{
-		DBConn:  dbPool,
-		Timeout: time.Second * time.Duration(cfg.TimeoutInSeconds),
+		DBConn:               dbPool,
+		Timeout:              time.Second * time.Duration(cfg.TimeoutInSeconds),
+		MaxConcurrentQueries: cfg.MaxConcurrentQueries,
+		PingsValidity:        cfg.PingsValidity,
 	}, nil
+}
+
+func (p Postgres) GetMaxConcurrentQueries() int {
+	return p.MaxConcurrentQueries
+}
+func (p Postgres) GetPingsValidity() int {
+	return p.PingsValidity
 }
 
 func (p Postgres) Close(ctx context.Context) {
@@ -242,5 +253,30 @@ func (p Postgres) InsertPing(ctx context.Context, ping target.Ping) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (p Postgres) DeleteOldPings(ctx context.Context) error {
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+	timestamp := time.Now().Add(time.Hour * -24 * time.Duration(p.PingsValidity)).Unix()
+
+	log.Printf(
+		"[INF] deleting old pings from DB before : %d",
+		timestamp,
+	)
+
+	resp, err := p.DBConn.Exec(
+		ctx,
+		`delete from `+PingsTable+`
+		where timestamp < $1;`,
+		timestamp,
+	)
+	if err != nil {
+		return err
+	}
+	log.Printf("[INF] old pings deleted : %+v", resp)
+
 	return nil
 }

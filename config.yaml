@@ -16,3 +16,4 @@ database:
   databaseName: "pingmaster"
   timeoutInSeconds: 20
   maxConcurrentQueries: 100
+  pingsValidity: 30 # in days

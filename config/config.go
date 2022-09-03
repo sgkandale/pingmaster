@@ -2,6 +2,7 @@ package config
 
 const (
 	Default_DBMaxConcurrentQuries int = 100
+	Default_DBPingsValidity       int = 30
 )
 
 type ServerConfig struct {
@@ -26,6 +27,7 @@ type DatabaseConfig struct {
 	DatabaseName         string
 	TimeoutInSeconds     int
 	MaxConcurrentQueries int
+	PingsValidity        int
 }
 
 type Config struct {

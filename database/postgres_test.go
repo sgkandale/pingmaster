@@ -16,12 +16,14 @@ import (
 
 var (
 	pgConfig = config.DatabaseConfig{
-		Username:         "postgres",
-		Password:         "postgres",
-		Host:             "localhost",
-		Port:             5432,
-		DatabaseName:     "pingmaster",
-		TimeoutInSeconds: 5,
+		Username:             "postgres",
+		Password:             "postgres",
+		Host:                 "localhost",
+		Port:                 5432,
+		DatabaseName:         "pingmaster",
+		TimeoutInSeconds:     5,
+		MaxConcurrentQueries: 100,
+		PingsValidity:        30,
 	}
 )
 
@@ -201,6 +203,26 @@ func TestPostgresInsertPing(t *testing.T) {
 	}
 
 	err = pgConn.InsertPing(ctx, ping)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPostgresDeleteOldPings(t *testing.T) {
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	pgConn, err := database.NewPostgres(
+		ctx,
+		pgConfig,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer pgConn.Close(ctx)
+
+	err = pgConn.DeleteOldPings(ctx)
 	if err != nil {
 		t.Error(err)
 	}

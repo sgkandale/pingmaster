@@ -81,12 +81,23 @@ func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
 	targetsChan := make(chan target.Target, 5000)
 	pingChan := make(chan *target.Ping, 5000)
 
+	// delete older pings
+	go func() {
+		deleteTicker := time.NewTicker(time.Minute)
+		for range deleteTicker.C {
+			err := dbConn.DeleteOldPings(ctx)
+			if err != nil {
+				log.Printf("[ERR] deleting old pings : %s", err)
+			}
+		}
+	}()
+
 	// ping targets in separate goroutine
 	go p.pingTargets(ctx, targetsChan, pingChan)
 
 	// workerpool of 100 workers
 	// to insert ping in DB
-	for i := 0; i < 100; i++ {
+	for i := 0; i < dbConn.GetMaxConcurrentQueries(); i++ {
 		go func() {
 			for eachPing := range pingChan {
 				err := dbConn.InsertPing(ctx, *eachPing)
@@ -106,6 +117,7 @@ func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
 			ticker.Stop()
 			return
 		case currentTime := <-ticker.C:
+			log.Println("[INF] initiating ping loop")
 			// retain read lock for the entire loop
 			p.Mutex.RLock()
 			for _, eachTarget := range p.Targets {
