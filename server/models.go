@@ -13,7 +13,8 @@ const (
 	ResponseMessage_NoAuthHeader        = "'authorization' header not present in request"
 	ResponseMessage_InvalidToken        = "invalid token"
 
-	ResponseMessage_TargetCreated = "new target created"
+	ResponseMessage_TargetCreated   = "new target created"
+	ResponseMessage_TargetDuplicate = "target with same name already exists"
 )
 
 type ServerResponse struct {

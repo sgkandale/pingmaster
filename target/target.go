@@ -17,12 +17,18 @@ const (
 // Target is an interface containing each target related methods
 type Target interface {
 
+	// GetGeneric returns GenericTarget
+	GetGeneric() *GenericTarget
+
 	// GetPoolKey returns the pool key in the described format
 	GetPoolKey() string
 
 	// Ping will call the target using appropriate method
 	// and return the details and error
 	Ping(ctx context.Context)
+
+	// GetLastPing returns the last ping of the target
+	GetLastPing() *Ping
 
 	// NeedToPing returns true if the target needs to be pinged
 	// based on the current time and last pinged time
@@ -88,12 +94,20 @@ func New(gt *GenericTarget, usr *user.User) (Target, error) {
 	}
 }
 
+func (gt GenericTarget) GetGeneric() *GenericTarget {
+	return &gt
+}
+
 func (gt GenericTarget) GetPoolKey() string {
-	return poolKey(gt.Name, gt.User.Name)
+	return Key(gt.Name, gt.User.Name)
 }
 
 func (gt *GenericTarget) GenerateId() {
 	gt.Id = gt.GetPoolKey()
+}
+
+func (gt *GenericTarget) GetLastPing() *Ping {
+	return gt.LastPing
 }
 
 func (gt *GenericTarget) NeedToPing(cTime time.Time) bool {
@@ -113,4 +127,13 @@ func (gt *GenericTarget) pingInitiated() {
 
 func (gt *GenericTarget) pingDone() {
 	gt.PingInProcess = false
+}
+
+// Key returns the key to use in the Pool
+// currently it is of the format <userName>_<targetName>
+func Key(userName, targetName string) string {
+	return fmt.Sprintf(
+		"%s_%s",
+		userName, targetName,
+	)
 }

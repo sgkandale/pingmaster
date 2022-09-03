@@ -67,12 +67,12 @@ func DecodeToken(tokenString string, tokenSecret []byte) (*User, error) {
 	if ok && token.Valid {
 		name, ok := claims[token_NameField].(string)
 		if !ok {
-			log.Println("[ERROR] user.DecodeToken, name field is not of string type")
+			log.Println("[ERR] user.DecodeToken, name field is not of string type")
 			return nil, errors.New("invalid token")
 		}
 		tokenId, ok := claims[token_IdentifierField].(string)
 		if !ok {
-			log.Println("[ERROR] user.DecodeToken, tokenId field is not of string type")
+			log.Println("[ERR] user.DecodeToken, tokenId field is not of string type")
 			return nil, errors.New("invalid token")
 		}
 

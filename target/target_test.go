@@ -12,22 +12,6 @@ type GenericTargetTest struct {
 	ExpectError bool
 }
 
-func GetTargetList() []target.Target {
-	usr := &user.User{Name: "John"}
-	tg, _ := target.New(
-		&target.GenericTarget{
-			TargetType:   target.TargetType_Website,
-			Name:         "Google",
-			Protocol:     "https",
-			HostAddress:  "www.google.com",
-			PingInterval: 10,
-		},
-		usr,
-	)
-
-	return []target.Target{tg}
-}
-
 func GetGenericTargestList() []GenericTargetTest {
 	return []GenericTargetTest{
 		// generic target checks

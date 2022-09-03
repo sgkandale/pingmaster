@@ -6,11 +6,13 @@ import (
 	"strings"
 
 	"pingmaster/config"
+	"pingmaster/target"
 	"pingmaster/user"
 )
 
 const (
-	UsersTable = "users"
+	UsersTable   = "users"
+	TargetsTable = "targets"
 )
 
 type Conn interface {
@@ -21,6 +23,10 @@ type Conn interface {
 	GetUserDetails(ctx context.Context, usr *user.User) error
 
 	InsertUser(ctx context.Context, usr user.User) error
+
+	FetchTargets(ctx context.Context) ([]target.Target, error)
+
+	InsertTarget(ctx context.Context, tg target.Target) error
 }
 
 func New(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {

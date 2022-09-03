@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"pingmaster/config"
+	"pingmaster/target"
 	"pingmaster/user"
 
 	"github.com/jackc/pgx/v4"
@@ -22,7 +23,7 @@ type Postgres struct {
 func NewPostgres(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
 
 	log.Printf(
-		"[INFO] connecting postgres at %s:%d",
+		"[INF] connecting postgres at %s:%d",
 		cfg.Host,
 		cfg.Port,
 	)
@@ -55,7 +56,7 @@ func NewPostgres(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
 	}
 
 	log.Printf(
-		"[INFO] postgres connected at %s:%d",
+		"[INF] postgres connected at %s:%d",
 		cfg.Host,
 		cfg.Port,
 	)
@@ -67,7 +68,7 @@ func NewPostgres(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
 }
 
 func (p Postgres) Close(ctx context.Context) {
-	log.Println("[WARN] closing postgres conn")
+	log.Println("[WRN] closing postgres conn")
 	p.DBConn.Close()
 }
 
@@ -107,7 +108,6 @@ func (p Postgres) GetUserDetails(ctx context.Context, usr *user.User) error {
 		}
 		return err
 	}
-
 	return nil
 }
 
@@ -126,9 +126,77 @@ func (p Postgres) InsertUser(ctx context.Context, usr user.User) error {
 		usr.CreatedAt,
 		0,
 	)
-	if err != nil && err != pgx.ErrNoRows {
+	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (p Postgres) FetchTargets(ctx context.Context) ([]target.Target, error) {
+	log.Printf("[INF] fetching targets from DB")
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+
+	rows, err := p.DBConn.Query(
+		ctx,
+		`select key, name, type, creator, protocol, 
+		host_address, port, ping_interval 
+		from `+TargetsTable,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	tgs := []target.Target{}
+	for rows.Next() {
+		gt := target.GenericTarget{}
+		usr := user.User{}
+		err := rows.Scan(
+			&gt.Id, &gt.Name, &gt.TargetType, &usr.Name, &gt.Protocol,
+			&gt.HostAddress, &gt.Port, &gt.PingInterval,
+		)
+		if err != nil {
+			log.Printf(
+				"[ERR] scanning target from DB into struct : %s", err,
+			)
+			continue
+		}
+		tg, err := target.New(&gt, &usr)
+		if err != nil {
+			log.Printf(
+				"[ERR] creating target out of data from DB : %s", err,
+			)
+			continue
+		}
+		tgs = append(tgs, tg)
+	}
+	log.Printf(
+		"[INF] fetched %d targets from DB", len(tgs),
+	)
+	return tgs, nil
+}
+
+func (p Postgres) InsertTarget(ctx context.Context, tg target.Target) error {
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+	gt := tg.GetGeneric()
+
+	_, err := p.DBConn.Exec(
+		ctx,
+		`insert into `+TargetsTable+`
+		 (key, name, type, creator, protocol,
+			host_address, port, ping_interval)
+		 values ($1, $2, $3, $4, $5, $6, $7, $8);`,
+		gt.GetPoolKey(), gt.Name, gt.TargetType, gt.User.Name,
+		gt.Protocol, gt.HostAddress, gt.Port, gt.PingInterval,
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }

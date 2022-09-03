@@ -1,12 +1,14 @@
-package target
+package targetspool
 
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 	"time"
+
+	"pingmaster/database"
+	"pingmaster/target"
 )
 
 // Pool holds all the targets.
@@ -14,13 +16,13 @@ import (
 // Key for the Pool is of the format <username>_<targetname>
 type Pool struct {
 	Mutex   sync.RWMutex
-	Targets map[string]Target
+	Targets map[string]target.Target
 }
 
 // NewPool initiates the pool
-func NewPool() *Pool {
+func New() *Pool {
 	return &Pool{
-		Targets: make(map[string]Target, 0),
+		Targets: make(map[string]target.Target, 0),
 	}
 }
 
@@ -42,7 +44,7 @@ func (p *Pool) Contains(key string) bool {
 
 // Get returns the target for the given userName and targetName
 // from the pool if it exists, otherwise it returns nil
-func (p *Pool) Get(key string) Target {
+func (p *Pool) Get(key string) target.Target {
 	p.Mutex.Lock()
 	defer p.Mutex.Unlock()
 	target, targetExists := p.Targets[key]
@@ -53,9 +55,9 @@ func (p *Pool) Get(key string) Target {
 }
 
 // Adds a new target to the pool
-func (p *Pool) Add(tg Target) error {
+func (p *Pool) Add(tg target.Target) error {
 	if p.Contains(tg.GetPoolKey()) {
-		return errors.New("target already exists")
+		return errors.New("target with same name already exists")
 	}
 	p.Mutex.RLock()
 	defer p.Mutex.RUnlock()
@@ -67,27 +69,33 @@ func (p *Pool) Add(tg Target) error {
 func (p *Pool) Remove(userName, targetName string) {
 	p.Mutex.RLock()
 	defer p.Mutex.RUnlock()
-	delete(p.Targets, poolKey(userName, targetName))
+	delete(p.Targets, target.Key(userName, targetName))
 }
 
-// poolKey returns the key to use in the Pool
-// currently it is of the format <userName>_<targetName>
-func poolKey(userName, targetName string) string {
-	return fmt.Sprintf(
-		"%s_%s",
-		userName, targetName,
-	)
+// FetchTargets fetches all targets from the database and stores them into the pool
+func (p *Pool) FetchTargets(ctx context.Context, dbConn database.Conn) {
 }
 
-// Iterate through all the registered every 10 seconds,
+// Iterate through all the registered targets every 10 seconds,
 // check if the target needs to be pinged and ping
-func (p *Pool) Monitor(ctx context.Context) {
-	log.Println("Monitor")
+func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
 	ticker := time.NewTicker(time.Second * 10)
-	targetsChan := make(chan Target, 5000)
+	targetsChan := make(chan target.Target, 5000)
+	pingChan := make(chan *target.Ping, 5000)
 
-	// handle targets in separate goroutine
-	go p.handleTargets(ctx, targetsChan)
+	// ping targets in separate goroutine
+	go p.pingTargets(ctx, targetsChan, pingChan)
+
+	// workerpool of 100 workers
+	// to insert ping in DB
+	for i := 0; i < 100; i++ {
+		go func() {
+			for eachPing := range pingChan {
+				// dbConn.InsertPing(ctx, *eachPing)
+				log.Println(eachPing)
+			}
+		}()
+	}
 
 	for {
 		select {
@@ -108,13 +116,19 @@ func (p *Pool) Monitor(ctx context.Context) {
 	}
 }
 
-func (p *Pool) handleTargets(ctx context.Context, targetsChan <-chan Target) {
+// pingTargets listens for targets to ping on targetsChan
+// and once pinged, the same target is then passed into
+// dbChan to insert its ping in database
+func (p *Pool) pingTargets(ctx context.Context, targetsChan <-chan target.Target, pingChan chan<- *target.Ping) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case toPingTarget := <-targetsChan:
-			go toPingTarget.Ping(ctx)
+			go func() {
+				toPingTarget.Ping(ctx)
+				pingChan <- toPingTarget.GetLastPing()
+			}()
 		}
 	}
 }

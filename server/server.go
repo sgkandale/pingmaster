@@ -12,7 +12,7 @@ import (
 
 	"pingmaster/config"
 	"pingmaster/database"
-	"pingmaster/target"
+	"pingmaster/target/targetspool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,14 +22,14 @@ type Server struct {
 	Database    database.Conn
 	TokenSecret []byte
 	Sesssions   *Sessions
-	TargetsPool *target.Pool
+	TargetsPool *targetspool.Pool
 }
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targetsPool *target.Pool) {
+func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targetsPool *targetspool.Pool) {
 
 	srvr := &Server{
 		Handler:     gin.New(),
@@ -55,7 +55,7 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targets
 
 	go func() {
 		log.Printf(
-			"[INFO] starting server on port : %d",
+			"[INF] starting server on port : %d",
 			cfg.Server.Port,
 		)
 
@@ -69,7 +69,7 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targets
 			err = srv.ListenAndServe()
 		}
 		if err != nil && err != http.ErrServerClosed {
-			log.Printf("[ERROR] starting server : %s", err)
+			log.Printf("[ERR] starting server : %s", err)
 			return
 		}
 	}()
@@ -78,7 +78,7 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targets
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("[WARN] shutting down server")
+	log.Println("[WRN] shutting down server")
 
 	// context to shutdown server
 	ctxToStop, cancelCtxToStop := context.WithTimeout(
@@ -88,9 +88,9 @@ func Start(ctx context.Context, cfg config.Config, dbConn database.Conn, targets
 	defer cancelCtxToStop()
 
 	if err := srv.Shutdown(ctxToStop); err != nil {
-		log.Printf("[WARN] server forced to shutdown : %s", err)
+		log.Printf("[WRN] server forced to shutdown : %s", err)
 		return
 	}
 
-	log.Println("[INFO] server exiting")
+	log.Println("[INF] server exiting")
 }

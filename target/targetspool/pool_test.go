@@ -1,16 +1,36 @@
-package target_test
+package targetspool_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"pingmaster/config"
+	"pingmaster/database"
 	"pingmaster/target"
+	"pingmaster/target/targetspool"
 	"pingmaster/user"
 )
 
+var targetsList []target.Target
+
+func init() {
+	usr := &user.User{Name: "John"}
+	tg, _ := target.New(
+		&target.GenericTarget{
+			TargetType:   target.TargetType_Website,
+			Name:         "Google",
+			Protocol:     "https",
+			HostAddress:  "www.google.com",
+			PingInterval: 10,
+		},
+		usr,
+	)
+	targetsList = []target.Target{tg}
+}
+
 func TestNewPool(t *testing.T) {
-	pool := target.NewPool()
+	pool := targetspool.New()
 	if pool == nil {
 		t.Error("NewPool returned nil")
 		return
@@ -21,7 +41,7 @@ func TestNewPool(t *testing.T) {
 }
 
 func TestPoolContains(t *testing.T) {
-	pool := target.NewPool()
+	pool := targetspool.New()
 
 	gtArr := []target.Target{
 		&target.Website{
@@ -46,7 +66,7 @@ func TestPoolContains(t *testing.T) {
 }
 
 func TestPoolGet(t *testing.T) {
-	pool := target.NewPool()
+	pool := targetspool.New()
 
 	gtArr := []target.Target{
 		&target.Website{
@@ -76,7 +96,7 @@ func TestPoolGet(t *testing.T) {
 }
 
 func TestPoolAdd(t *testing.T) {
-	pool := target.NewPool()
+	pool := targetspool.New()
 
 	gtArr := []target.Target{
 		&target.Website{
@@ -102,16 +122,22 @@ func TestPoolAdd(t *testing.T) {
 }
 
 func TestPoolMonitor(t *testing.T) {
-	pool := target.NewPool()
+	pool := targetspool.New()
 
-	gtArr := GetTargetList()
-
-	for i := range gtArr {
-		pool.Add(gtArr[i])
+	for i := range targetsList {
+		pool.Add(targetsList[i])
 	}
 
 	ctx, cancelCtx := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancelCtx()
+	dbConn, err := database.New(
+		ctx,
+		config.DatabaseConfig{},
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-	pool.Monitor(ctx)
+	pool.Monitor(ctx, dbConn)
 }
