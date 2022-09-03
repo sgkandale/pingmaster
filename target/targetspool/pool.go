@@ -3,6 +3,7 @@ package targetspool
 import (
 	"context"
 	"errors"
+	"log"
 	"sync"
 	"time"
 
@@ -71,13 +72,11 @@ func (p *Pool) Remove(userName, targetName string) {
 	delete(p.Targets, target.Key(userName, targetName))
 }
 
-// FetchTargets fetches all targets from the database and stores them into the pool
-func (p *Pool) FetchTargets(ctx context.Context, dbConn database.Conn) {
-}
-
 // Iterate through all the registered targets every 10 seconds,
 // check if the target needs to be pinged and ping
 func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
+	log.Println("[INF] pool monitor started")
+
 	ticker := time.NewTicker(time.Second * 10)
 	targetsChan := make(chan target.Target, 5000)
 	pingChan := make(chan *target.Ping, 5000)
@@ -90,7 +89,13 @@ func (p *Pool) Monitor(ctx context.Context, dbConn database.Conn) {
 	for i := 0; i < 100; i++ {
 		go func() {
 			for eachPing := range pingChan {
-				dbConn.InsertPing(ctx, *eachPing)
+				err := dbConn.InsertPing(ctx, *eachPing)
+				if err != nil {
+					log.Printf(
+						"[ERR] inserting ping in DB for %s : %s",
+						eachPing.TargetKey, err,
+					)
+				}
 			}
 		}()
 	}

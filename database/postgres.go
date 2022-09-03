@@ -74,6 +74,11 @@ func (p Postgres) Close(ctx context.Context) {
 
 func (p Postgres) CheckUserExistance(ctx context.Context, usr user.User) (bool, error) {
 
+	log.Printf(
+		"[INF] checking user existance in DB : %s",
+		usr.Name,
+	)
+
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
 	defer cancelCtx()
 	nameFromDb := ""
@@ -94,6 +99,11 @@ func (p Postgres) CheckUserExistance(ctx context.Context, usr user.User) (bool, 
 
 func (p Postgres) GetUserDetails(ctx context.Context, usr *user.User) error {
 
+	log.Printf(
+		"[INF] getting user details from DB : %s",
+		usr.Name,
+	)
+
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
 	defer cancelCtx()
 
@@ -112,6 +122,11 @@ func (p Postgres) GetUserDetails(ctx context.Context, usr *user.User) error {
 }
 
 func (p Postgres) InsertUser(ctx context.Context, usr user.User) error {
+
+	log.Printf(
+		"[INF] inserting user in DB : %s",
+		usr.Name,
+	)
 
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
 	defer cancelCtx()
@@ -186,6 +201,11 @@ func (p Postgres) InsertTarget(ctx context.Context, tg target.Target) error {
 	defer cancelCtx()
 	gt := tg.GetGeneric()
 
+	log.Printf(
+		"[INF] inserting target in DB : %s %s:%d",
+		gt.Protocol, gt.HostAddress, gt.Port,
+	)
+
 	_, err := p.DBConn.Exec(
 		ctx,
 		`insert into `+TargetsTable+`
@@ -202,6 +222,11 @@ func (p Postgres) InsertTarget(ctx context.Context, tg target.Target) error {
 }
 
 func (p Postgres) InsertPing(ctx context.Context, ping target.Ping) error {
+
+	log.Printf(
+		"[INF] inserting ping in DB for : %s",
+		ping.TargetKey,
+	)
 
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
 	defer cancelCtx()
