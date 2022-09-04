@@ -26,16 +26,16 @@ func (s Server) addTarget(c *gin.Context) {
 		)
 		return
 	}
-	// if !s.Sesssions.TokenExists(userReq.TokenId) {
-	// 	c.JSON(
-	// 		http.StatusUnauthorized,
-	// 		ServerResponse{
-	// 			Status:  ResponseStatus_Error,
-	// 			Message: ResponseMessage_InvalidToken,
-	// 		},
-	// 	)
-	// 	return
-	// }
+	if !s.Sesssions.TokenExists(userReq.TokenId) {
+		c.JSON(
+			http.StatusUnauthorized,
+			ServerResponse{
+				Status:  ResponseStatus_Error,
+				Message: ResponseMessage_InvalidToken,
+			},
+		)
+		return
+	}
 
 	targetReq := target.GenericTarget{}
 	err = c.ShouldBindJSON(&targetReq)

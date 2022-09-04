@@ -9,7 +9,7 @@ export default function TargetTypeWebsite(props) {
             alignItems="flex-start"
             sx={{ mb: 5 }}
         >
-            <FormControl sx={{ minWidth: 110 }}>
+            <FormControl sx={{ width: 110 }}>
                 <InputLabel id="protocol-interval-label">Protocol</InputLabel>
                 <Select
                     labelId="protocol-interval-label"
@@ -30,8 +30,21 @@ export default function TargetTypeWebsite(props) {
                 value={props.values.address}
                 onChange={props.changeValues}
                 variant='outlined'
-                sx={{ width: `calc(100% - 110px)` }}
-                helperText="Include path also if you are targeting the same."
+                sx={{ width: `calc(100% - 220px)` }}
+                helperText={<>
+                    Include path also if you are targeting the same. <br />
+                    Specify port <u>ONLY</u> if your website is running on non-default port.
+                </>}
+            />
+            <TextField
+                id='port'
+                label='Port'
+                name='port'
+                type='number'
+                value={props.values.port}
+                onChange={props.changeValues}
+                variant='outlined'
+                sx={{ width: 110 }}
             />
         </Grid>
     </>

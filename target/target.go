@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"pingmaster/helpers"
 	"pingmaster/user"
 )
 
@@ -55,10 +56,13 @@ type GenericTarget struct {
 	HostAddress string `json:"host_address"`
 	Port        int    `json:"port"`
 
-	// PingInterval is in seconds
-	PingInterval  int   `json:"ping_interval"`
-	PingInProcess bool  `json:"-"`
-	LastPing      *Ping `json:"-"`
+	// PingInterval and PingTimeout is in seconds
+	PingInterval_String string `json:"ping_interval"`
+	PingInterval        int    `json:"-"`
+	PingTimeout_String  string `json:"ping_timeout"`
+	PingTimeout         int    `json:"-"`
+	PingInProcess       bool   `json:"-"`
+	LastPing            *Ping  `json:"-"`
 }
 
 // New returns a new Target instance
@@ -71,11 +75,22 @@ func New(gt *GenericTarget, usr *user.User) (Target, error) {
 	if gt.Name == "" {
 		return nil, errors.New("name not specified")
 	}
-	if gt.PingInterval <= 0 {
-		return nil, errors.New("ping_interval not specified")
+	gt.PingInterval = helpers.GetIntervalFromDurationStr(gt.PingInterval_String)
+	gt.PingTimeout = helpers.GetIntervalFromDurationStr(gt.PingTimeout_String)
+	if gt.PingInterval < 10 {
+		return nil, errors.New("invalid ping_interval")
 	}
 	if gt.PingInterval > 86400 {
 		return nil, errors.New("ping_interval cannot be more than a day")
+	}
+	if gt.PingTimeout < 1 {
+		return nil, errors.New("invalid ping_timeout")
+	}
+	if gt.PingTimeout > gt.PingInterval {
+		return nil, errors.New("ping_timeout cannot be more than ping_interval")
+	}
+	if gt.PingTimeout > 30 {
+		return nil, errors.New("ping_timeout cannot be more than 30 seconds")
 	}
 	if usr == nil {
 		return nil, errors.New("unable to get user details")

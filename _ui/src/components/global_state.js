@@ -1,9 +1,10 @@
 import { createStore } from "redux";
-import { ACTION_LOGIN, ACTION_LOGOUT } from "./state_actions";
+import { ACTION_LOGIN, ACTION_LOGOUT, ACTION_REMOVE_TARGETS } from "./state_actions";
 
 var initialState = {
     loggedIn: false,
     user: {},
+    targets: [],
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -18,6 +19,12 @@ const rootReducer = (state = initialState, action) => {
 
         case ACTION_LOGOUT:
             return initialState
+
+        case ACTION_REMOVE_TARGETS:
+            return {
+                ...state,
+                targets: [],
+            }
 
         default:
             return state

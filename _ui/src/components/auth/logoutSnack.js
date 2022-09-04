@@ -6,7 +6,7 @@ export default function LogoutSnackbar(props) {
         autoHideDuration={3000}
         onClose={props.close}
     >
-        <Alert onClose={props.close} severity={props.severity} sx={{ width: '100%' }}>
+        <Alert onClose={props.close} severity="error" sx={{ width: '100%' }}>
             {props.message}
         </Alert>
     </Snackbar>

@@ -64,6 +64,6 @@ export default function Menu(props) {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
             {props.viewElement}
         </Box>
-        <LogoutSnackbar open={snack.view} close={closeSnack} message={snack.message} />
+        <LogoutSnackbar open={snack.view} close={closeSnack} severity={snack.severity} message={snack.message} />
     </Box>
 }

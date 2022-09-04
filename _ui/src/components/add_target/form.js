@@ -19,7 +19,7 @@ export default function Form(props) {
             onChange={props.changeValues}
             variant='outlined'
             fullWidth
-            helperText='Name must be unique'
+            helperText='Name must be unique across your targets.'
             sx={{ mb: 3 }}
         />
         <TargetType
