@@ -167,7 +167,7 @@ func (p Postgres) FetchTargets(ctx context.Context) ([]target.Target, error) {
 	rows, err := p.DBConn.Query(
 		ctx,
 		`select key, name, type, creator, protocol, 
-		host_address, port, ping_interval 
+		host_address, port, ping_interval, ping_timeout
 		from `+TargetsTable,
 	)
 	if err != nil {
@@ -183,7 +183,7 @@ func (p Postgres) FetchTargets(ctx context.Context) ([]target.Target, error) {
 		usr := user.User{}
 		err := rows.Scan(
 			&gt.Id, &gt.Name, &gt.TargetType, &usr.Name, &gt.Protocol,
-			&gt.HostAddress, &gt.Port, &gt.PingInterval,
+			&gt.HostAddress, &gt.Port, &gt.PingInterval, &gt.PingTimeout,
 		)
 		if err != nil {
 			log.Printf(
@@ -263,8 +263,8 @@ func (p Postgres) DeleteOldPings(ctx context.Context) error {
 	timestamp := time.Now().Add(time.Hour * -24 * time.Duration(p.PingsValidity)).Unix()
 
 	log.Printf(
-		"[INF] deleting old pings from DB before : %d",
-		timestamp,
+		"[INF] deleting old pings from DB before : %s",
+		time.Unix(timestamp, 0).Format("2006-01-02 15:04:05"),
 	)
 
 	resp, err := p.DBConn.Exec(
@@ -279,4 +279,75 @@ func (p Postgres) DeleteOldPings(ctx context.Context) error {
 	log.Printf("[INF] old pings deleted : %+v", resp)
 
 	return nil
+}
+
+func (p Postgres) GetTargetDetails(ctx context.Context, tg *target.GenericTarget) error {
+
+	log.Printf(
+		"[INF] getting target details from DB : %s",
+		tg.GetPoolKey(),
+	)
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+
+	err := p.DBConn.QueryRow(
+		ctx,
+		`select key, name, type, protocol,
+			host_address, port, ping_interval
+			 from `+TargetsTable+` where key = $1 LIMIT 1`,
+		tg.GetPoolKey(),
+	).Scan(
+		&tg.Id, &tg.Name, &tg.TargetType, &tg.Protocol,
+		&tg.HostAddress, &tg.Port, &tg.PingInterval,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return errors.New("not found")
+		}
+		return err
+	}
+	return nil
+}
+
+func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]*target.GenericTarget, error) {
+
+	log.Printf(
+		"[INF] getting all targets from DB for user : %s",
+		usr.Name,
+	)
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+
+	rows, err := p.DBConn.Query(
+		ctx,
+		`select key, name, type, protocol, 
+		host_address, port, ping_interval 
+		from `+TargetsTable+` where creator=$1`,
+		usr.Name,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	tgs := []*target.GenericTarget{}
+	for rows.Next() {
+		gt := target.GenericTarget{}
+		err := rows.Scan(
+			&gt.Id, &gt.Name, &gt.TargetType, &gt.Protocol,
+			&gt.HostAddress, &gt.Port, &gt.PingInterval,
+		)
+		if err != nil {
+			log.Printf(
+				"[ERR] scanning target from DB into struct : %s", err,
+			)
+			continue
+		}
+		tgs = append(tgs, &gt)
+	}
+	return tgs, nil
 }

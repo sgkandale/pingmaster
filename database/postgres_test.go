@@ -55,6 +55,7 @@ func TestPostgresCheckUserExistance(t *testing.T) {
 	)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	defer pgConn.Close(ctx)
 
@@ -66,6 +67,7 @@ func TestPostgresCheckUserExistance(t *testing.T) {
 	)
 	if errExists != nil && errExists != pgx.ErrNoRows {
 		t.Error(errExists)
+		return
 	}
 
 	if userExist {
@@ -84,6 +86,7 @@ func TestPostgresGetUserDetails(t *testing.T) {
 	)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	defer pgConn.Close(ctx)
 
@@ -109,6 +112,7 @@ func TestPostgresInsertUser(t *testing.T) {
 	)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	defer pgConn.Close(ctx)
 
@@ -223,6 +227,57 @@ func TestPostgresDeleteOldPings(t *testing.T) {
 	defer pgConn.Close(ctx)
 
 	err = pgConn.DeleteOldPings(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPostgresGetTargetDetails(t *testing.T) {
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	pgConn, err := database.NewPostgres(
+		ctx,
+		pgConfig,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer pgConn.Close(ctx)
+
+	tg := target.GenericTarget{
+		Name: "Google",
+		User: &user.User{
+			Name: "Ramesh",
+		},
+	}
+
+	err = pgConn.GetTargetDetails(ctx, &tg)
+	if err != nil && err != pgx.ErrNoRows {
+		t.Error(err)
+	}
+}
+
+func TestPostgresGetTargets(t *testing.T) {
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	pgConn, err := database.NewPostgres(
+		ctx,
+		pgConfig,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer pgConn.Close(ctx)
+
+	usr := user.User{
+		Name: "Ramesh",
+	}
+
+	_, err = pgConn.GetTargets(ctx, usr)
 	if err != nil {
 		t.Error(err)
 	}

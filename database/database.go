@@ -36,6 +36,10 @@ type Conn interface {
 	InsertPing(ctx context.Context, ping target.Ping) error
 
 	DeleteOldPings(ctx context.Context) error
+
+	GetTargetDetails(ctx context.Context, tg *target.GenericTarget) error
+
+	GetTargets(ctx context.Context, usr user.User) ([]*target.GenericTarget, error)
 }
 
 func New(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {
