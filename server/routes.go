@@ -17,4 +17,5 @@ func (s Server) addRoutes(pathPrefix string) {
 	userRoutes.POST("/logout", s.logout)
 
 	targetRoutes.POST("/", s.addTarget)
+	targetRoutes.GET("/", s.getTarget)
 }
