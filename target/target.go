@@ -75,15 +75,26 @@ func New(gt *GenericTarget, usr *user.User) (Target, error) {
 	if gt.Name == "" {
 		return nil, errors.New("name not specified")
 	}
-	gt.PingInterval = helpers.GetIntervalFromDurationStr(gt.PingInterval_String)
-	gt.PingTimeout = helpers.GetIntervalFromDurationStr(gt.PingTimeout_String)
-	if gt.PingInterval < 10 {
+
+	// workaround for targets fetched from db
+	if gt.PingInterval == 0 {
+		gt.PingInterval = helpers.GetIntervalFromDurationStr(gt.PingInterval_String)
+	} else {
+		gt.PingInterval_String = helpers.GetDurationStrFromInterval(gt.PingInterval)
+	}
+	if gt.PingTimeout == 0 {
+		gt.PingTimeout = helpers.GetIntervalFromDurationStr(gt.PingTimeout_String)
+	} else {
+		gt.PingTimeout_String = helpers.GetDurationStrFromInterval(gt.PingTimeout)
+	}
+
+	if gt.PingInterval < 10 || gt.PingInterval_String == "" {
 		return nil, errors.New("invalid ping_interval")
 	}
 	if gt.PingInterval > 86400 {
 		return nil, errors.New("ping_interval cannot be more than a day")
 	}
-	if gt.PingTimeout < 1 {
+	if gt.PingTimeout < 1 || gt.PingTimeout_String == "" {
 		return nil, errors.New("invalid ping_timeout")
 	}
 	if gt.PingTimeout > gt.PingInterval {
@@ -107,6 +118,19 @@ func New(gt *GenericTarget, usr *user.User) (Target, error) {
 	default:
 		return nil, fmt.Errorf("unsupported target type : %s", gt.TargetType)
 	}
+}
+
+func NewGeneric(name string, usr *user.User) (*GenericTarget, error) {
+	if name == "" {
+		return nil, errors.New("name is empty")
+	}
+	if usr == nil {
+		return nil, errors.New("user is nil")
+	}
+	return &GenericTarget{
+		Name: name,
+		User: usr,
+	}, nil
 }
 
 func (gt GenericTarget) GetGeneric() *GenericTarget {
