@@ -50,3 +50,38 @@ func GetIntervalFromDurationStr(d string) int {
 		return 0
 	}
 }
+
+// GetDurationStrFromInterval returns duration string
+// from provided number of seconds
+func GetDurationStrFromInterval(i int) string {
+	switch i {
+	case 1:
+		return Duration_Second_1
+	case 5:
+		return Duration_Second_5
+	case 10:
+		return Duration_Second_10
+	case 30:
+		return Duration_Second_30
+	case 60:
+		return Duration_Minute_1
+	case 120:
+		return Duration_Minute_2
+	case 300:
+		return Duration_Minute_5
+	case 600:
+		return Duration_Minute_10
+	case 1200:
+		return Duration_Minute_20
+	case 3600:
+		return Duration_Hour_1
+	case 7200:
+		return Duration_Hour_2
+	case 21600:
+		return Duration_Hour_6
+	case 86400:
+		return Duration_Hour_24
+	default:
+		return ""
+	}
+}
