@@ -282,3 +282,40 @@ func TestPostgresGetTargets(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestPostgresGetPings(t *testing.T) {
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	pgConn, err := database.NewPostgres(
+		ctx,
+		pgConfig,
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer pgConn.Close(ctx)
+
+	w, err := target.NewWebsite(
+		&target.GenericTarget{
+			TargetType: target.TargetType_Website,
+			Name:       "Google",
+			User: &user.User{
+				Name: "Ramesh",
+			},
+			Protocol:     "https",
+			HostAddress:  "www.google.com",
+			PingInterval: 10,
+		},
+	)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	_, err = pgConn.GetPings(ctx, w, time.Now().Unix(), 10)
+	if err != nil {
+		t.Error(err)
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"pingmaster/config"
+	"pingmaster/helpers"
 	"pingmaster/target"
 	"pingmaster/user"
 
@@ -264,7 +265,7 @@ func (p Postgres) DeleteOldPings(ctx context.Context) error {
 
 	log.Printf(
 		"[INF] deleting old pings from DB before : %s",
-		time.Unix(timestamp, 0).Format("2006-01-02 15:04:05"),
+		time.Unix(timestamp, 0).Format(helpers.Default_TimeFormat),
 	)
 
 	resp, err := p.DBConn.Exec(
@@ -350,4 +351,47 @@ func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]*target.Gene
 		tgs = append(tgs, &gt)
 	}
 	return tgs, nil
+}
+
+func (p Postgres) GetPings(ctx context.Context, tg target.Target, beforeTime, limit int64) ([]*target.Ping, error) {
+
+	log.Printf(
+		"[INF] getting pings from DB for target : %s, before timestamp : %d, limit : %d",
+		tg.GetPoolKey(), beforeTime, limit,
+	)
+
+	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
+	defer cancelCtx()
+
+	rows, err := p.DBConn.Query(
+		ctx,
+		`select timestamp, duration, status_code, error
+		from `+PingsTable+` where key=$1 and
+		timestamp<=$2::bigint limit $3::bigint`,
+		tg.GetPoolKey(), beforeTime, limit,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	pings := []*target.Ping{}
+	for rows.Next() {
+		ping := target.Ping{}
+		err := rows.Scan(
+			&ping.Timestamp, &ping.Duration, &ping.StatusCode,
+			&ping.Error,
+		)
+		if err != nil {
+			log.Printf(
+				"[ERR] scanning ping from DB into struct : %s", err,
+			)
+			continue
+		}
+		ping.TimestampStr = time.Unix(ping.Timestamp, 0).Format(helpers.Default_TimeFormat)
+		pings = append(pings, &ping)
+	}
+	return pings, nil
 }

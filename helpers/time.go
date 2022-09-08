@@ -14,6 +14,8 @@ const (
 	Duration_Hour_2    = "2h"
 	Duration_Hour_6    = "6h"
 	Duration_Hour_24   = "24h"
+
+	Default_TimeFormat = "2006-01-02 15:04:05"
 )
 
 // GetIntervalFromDurationStr returns number of seconds
