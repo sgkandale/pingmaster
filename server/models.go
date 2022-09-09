@@ -15,6 +15,8 @@ const (
 
 	ResponseMessage_TargetCreated   = "new target created"
 	ResponseMessage_TargetDuplicate = "target with same name already exists"
+
+	Default_PingCountLimit = 100
 )
 
 type ServerResponse struct {

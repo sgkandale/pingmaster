@@ -222,10 +222,11 @@ func (p Postgres) InsertTarget(ctx context.Context, tg target.Target) error {
 		ctx,
 		`insert into `+TargetsTable+`
 		 (key, name, type, creator, protocol,
-			host_address, port, ping_interval)
-		 values ($1, $2, $3, $4, $5, $6, $7, $8);`,
+			host_address, port, ping_interval, ping_timeout)
+		 values ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
 		gt.GetPoolKey(), gt.Name, gt.TargetType, gt.User.Name,
 		gt.Protocol, gt.HostAddress, gt.Port, gt.PingInterval,
+		gt.PingTimeout,
 	)
 	if err != nil {
 		return err
@@ -243,13 +244,17 @@ func (p Postgres) InsertPing(ctx context.Context, ping target.Ping) error {
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
 	defer cancelCtx()
 
+	if ping.Error == nil {
+		ping.Error = errors.New("")
+	}
+
 	_, err := p.DBConn.Exec(
 		ctx,
 		`insert into `+PingsTable+`
 		 (key, timestamp, duration, status_code, error)
 		 values ($1, $2, $3, $4, $5);`,
 		ping.TargetKey, ping.Timestamp, ping.Duration,
-		ping.StatusCode, ping.Error,
+		ping.StatusCode, ping.Error.Error(),
 	)
 	if err != nil {
 		return err
@@ -311,7 +316,7 @@ func (p Postgres) GetTargetDetails(ctx context.Context, tg *target.GenericTarget
 	return nil
 }
 
-func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]*target.GenericTarget, error) {
+func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]target.Target, error) {
 
 	log.Printf(
 		"[INF] getting all targets from DB for user : %s",
@@ -324,7 +329,7 @@ func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]*target.Gene
 	rows, err := p.DBConn.Query(
 		ctx,
 		`select key, name, type, protocol, 
-		host_address, port, ping_interval 
+		host_address, port, ping_interval, ping_timeout
 		from `+TargetsTable+` where creator=$1`,
 		usr.Name,
 	)
@@ -335,29 +340,36 @@ func (p Postgres) GetTargets(ctx context.Context, usr user.User) ([]*target.Gene
 		return nil, err
 	}
 
-	tgs := []*target.GenericTarget{}
+	tgs := []target.Target{}
 	for rows.Next() {
 		gt := target.GenericTarget{}
 		err := rows.Scan(
 			&gt.Id, &gt.Name, &gt.TargetType, &gt.Protocol,
-			&gt.HostAddress, &gt.Port, &gt.PingInterval,
+			&gt.HostAddress, &gt.Port, &gt.PingInterval, &gt.PingTimeout,
 		)
 		if err != nil {
 			log.Printf(
-				"[ERR] scanning target from DB into struct : %s", err,
+				"[ERR] scanning generic target from DB into struct : %s", err,
 			)
 			continue
 		}
-		tgs = append(tgs, &gt)
+		ntg, err := target.New(&gt, &usr)
+		if err != nil {
+			log.Printf(
+				"[ERR] creating target from generic target from DB : %s", err,
+			)
+			continue
+		}
+		tgs = append(tgs, ntg)
 	}
 	return tgs, nil
 }
 
-func (p Postgres) GetPings(ctx context.Context, tg target.Target, beforeTime, limit int64) ([]*target.Ping, error) {
+func (p Postgres) GetPings(ctx context.Context, gt *target.GenericTarget, beforeTime, limit int64) ([]*target.Ping, error) {
 
 	log.Printf(
 		"[INF] getting pings from DB for target : %s, before timestamp : %d, limit : %d",
-		tg.GetPoolKey(), beforeTime, limit,
+		gt.GetPoolKey(), beforeTime, limit,
 	)
 
 	ctx, cancelCtx := context.WithTimeout(ctx, p.Timeout)
@@ -367,8 +379,8 @@ func (p Postgres) GetPings(ctx context.Context, tg target.Target, beforeTime, li
 		ctx,
 		`select timestamp, duration, status_code, error
 		from `+PingsTable+` where key=$1 and
-		timestamp<=$2::bigint limit $3::bigint`,
-		tg.GetPoolKey(), beforeTime, limit,
+		timestamp<=$2::bigint order by timestamp desc limit $3::bigint;`,
+		gt.GetPoolKey(), beforeTime, limit,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -380,9 +392,10 @@ func (p Postgres) GetPings(ctx context.Context, tg target.Target, beforeTime, li
 	pings := []*target.Ping{}
 	for rows.Next() {
 		ping := target.Ping{}
+		pingErr := ""
 		err := rows.Scan(
 			&ping.Timestamp, &ping.Duration, &ping.StatusCode,
-			&ping.Error,
+			&pingErr,
 		)
 		if err != nil {
 			log.Printf(
@@ -391,6 +404,7 @@ func (p Postgres) GetPings(ctx context.Context, tg target.Target, beforeTime, li
 			continue
 		}
 		ping.TimestampStr = time.Unix(ping.Timestamp, 0).Format(helpers.Default_TimeFormat)
+		ping.Error = errors.New(pingErr)
 		pings = append(pings, &ping)
 	}
 	return pings, nil

@@ -18,4 +18,5 @@ func (s Server) addRoutes(pathPrefix string) {
 
 	targetRoutes.POST("/", s.addTarget)
 	targetRoutes.GET("/", s.getTarget)
+	targetRoutes.GET("/pings", s.getPings)
 }

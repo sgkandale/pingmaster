@@ -39,9 +39,9 @@ type Conn interface {
 
 	GetTargetDetails(ctx context.Context, tg *target.GenericTarget) error
 
-	GetTargets(ctx context.Context, usr user.User) ([]*target.GenericTarget, error)
+	GetTargets(ctx context.Context, usr user.User) ([]target.Target, error)
 
-	GetPings(ctx context.Context, tg target.Target, beforeTime, limit int64) ([]*target.Ping, error)
+	GetPings(ctx context.Context, gt *target.GenericTarget, beforeTime, limit int64) ([]*target.Ping, error)
 }
 
 func New(ctx context.Context, cfg config.DatabaseConfig) (Conn, error) {

@@ -26,8 +26,8 @@ CREATE TABLE pings(
    key VARCHAR(1024) NOT NULL,
    timestamp BIGINT NOT NULL,
    duration INT NOT NULL,
-   status_code INT,
-   error VARCHAR(4096),
+   status_code INT NOT NULL,
+   error VARCHAR(4096) NOT NULL,
    PRIMARY KEY (key, timestamp),
    CONSTRAINT fk_target FOREIGN KEY(key) REFERENCES targets(key) ON DELETE CASCADE
 );

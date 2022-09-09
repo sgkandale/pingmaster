@@ -297,24 +297,22 @@ func TestPostgresGetPings(t *testing.T) {
 	}
 	defer pgConn.Close(ctx)
 
-	w, err := target.NewWebsite(
-		&target.GenericTarget{
-			TargetType: target.TargetType_Website,
-			Name:       "Google",
-			User: &user.User{
-				Name: "Ramesh",
-			},
-			Protocol:     "https",
-			HostAddress:  "www.google.com",
-			PingInterval: 10,
+	gt := target.GenericTarget{
+		TargetType: target.TargetType_Website,
+		Name:       "Google",
+		User: &user.User{
+			Name: "Ramesh",
 		},
-	)
+		Protocol:     "https",
+		HostAddress:  "www.google.com",
+		PingInterval: 10,
+	}
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	_, err = pgConn.GetPings(ctx, w, time.Now().Unix(), 10)
+	_, err = pgConn.GetPings(ctx, &gt, time.Now().Unix(), 10)
 	if err != nil {
 		t.Error(err)
 	}
