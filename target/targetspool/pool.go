@@ -138,6 +138,7 @@ func (p *Pool) pingTargets(ctx context.Context, targetsChan <-chan target.Target
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println("[INF] stopping ping monitor")
 			return
 		case toPingTarget := <-targetsChan:
 			go func() {
