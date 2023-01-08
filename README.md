@@ -13,3 +13,7 @@ Easy Infrastructure Uptime Monitoring
 - [x] PostgreSQL
 - [ ] MySQL
 - [ ] MongoDB
+
+
+### Web UI
+Web UI for pingmaster is available at [pingmaster_ui](https://github.com/sgkandale/pingmaster_ui)
