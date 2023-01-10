@@ -294,12 +294,12 @@ func (s Server) getPings(c *gin.Context) {
 		}
 	}
 
-	gt := target.GenericTarget{
+	genericTarget := target.GenericTarget{
 		Name: nameArr[0],
 		User: userReq,
 	}
 
-	err = s.Database.GetTargetDetails(c.Request.Context(), &gt)
+	err = s.Database.GetTargetDetails(c.Request.Context(), &genericTarget)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
@@ -311,7 +311,7 @@ func (s Server) getPings(c *gin.Context) {
 		return
 	}
 
-	pings, err := s.Database.GetPings(c.Request.Context(), &gt, beforeInt, limitInt)
+	pings, err := s.Database.GetPings(c.Request.Context(), &genericTarget, beforeInt, limitInt)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
